@@ -1,6 +1,10 @@
 import os
 import pandas as pd
 import joblib
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+
+# Создание пустого dataframe для сохранения метрик
+metrics_df = pd.DataFrame(columns=["Model", "MAE", "MSE", "R2"])
 
 # Загрузка тестовых данных и применение модели
 for filename in os.listdir('test'):
@@ -25,8 +29,27 @@ for filename in os.listdir('test'):
         # Получение предсказаний
         predictions = model.predict(features)
 
+        # Вычисление метрик
+        mae = mean_absolute_error(target, predictions)
+        mse = mean_squared_error(target, predictions)
+        r2 = r2_score(target, predictions)
+
+        # Добавление метрик в dataframe
+        metrics_df = metrics_df._append({
+            "Model": model_name,
+            "MAE": mae,
+            "MSE": mse,
+            "R2": r2
+        }, ignore_index=True)
+
+        print(metrics_df)
+
         # Запись предсказаний в CSV файл
         predictions_df = pd.DataFrame(predictions, columns=['Prediction'])
         predictions_df.to_csv(f"{filename[:-4]}_predictions.csv", index=False)
 
         print(f'Predictions for {filename} saved as {filename[:-4]}_predictions.csv')
+
+# Сохранение метрик в CSV файл
+metrics_df.to_csv("metrics.csv", index=False)
+print('Metrics saved as metrics.csv')
